@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customized Bracelets</title>
+<style>
+body { font-family: Arial, sans-serif; background:#cce7ff; margin:0; padding:20px; color:#111;}
+.container { max-width:900px; margin:auto; background:#fff; padding:20px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1);}
+h1 { margin-bottom:10px; text-align:center;}
+.bracelet-preview { display:flex; justify-content:center; flex-wrap:wrap; gap:8px; margin-bottom:15px; min-height:60px; align-items:center; border:1px solid #ddd; border-radius:10px; padding:10px; background:#fafafa;}
+.bead { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:14px; }
+.form-group { margin-bottom:12px;}
+label { display:block; font-weight:bold; margin-bottom:4px;}
+input, select { width:100%; padding:8px; border-radius:6px; border:1px solid #ccc; }
+button { padding:10px 14px; border:none; border-radius:8px; cursor:pointer;}
+button.primary { background:#7c3aed; color:white; }
+button.secondary { background:#eee; color:#111; margin-left:8px;}
+.cart { border-top:1px solid #ddd; padding-top:10px; margin-top:10px;}
+.cart-item { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; background:#f4f4f4; padding:6px 10px; border-radius:6px;}
+.cart-item span { font-size:14px;}
+.modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); justify-content:center; align-items:center;}
+.modal-content { background:#fff; padding:20px; border-radius:12px; width:90%; max-width:400px;}
+.designs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+.designs img { width:60px; height:60px; border-radius:8px; border:2px solid #ccc; cursor:pointer; object-fit:cover;}
+.designs img.selected { border-color:#7c3aed; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Customized Bracelets</h1>
+
+<div class="bracelet-preview" id="preview">Type text to preview your bracelet</div>
+
+<!-- Bracelet Design Logos -->
+<div class="form-group">
+<label>Choose Bracelet Design (replace with your own images)</label>
+<div class="designs" id="designs">
+<img src="https://i.pinimg.com/originals/78/58/f1/7858f1ea4de74b45287e87d429adb243.jpg" data-name="Design A">
+<img src="https://i.etsystatic.com/11435799/r/il/2bee34/5929178904/il_600x600.5929178904_32sy.jpg" data-name="Design B">
+<img src="https://tse1.mm.bing.net/th/id/OIP.EoNNxfSteB1A8YTUji8WzwHaFj?cb=ucfimgc2&w=1080&h=810&rs=1&pid=ImgDetMain&o=7&rm=3" data-name="Design C">
+</div>
+</div>
+
+<div class="form-group">
+<label>Bracelet Style</label>
+<select id="style">
+<option value="Classic">Classic</option>
+<option value="Pearl">Pearl</option>
+<option value="Friendship">Friendship</option>
+<option value="Minimal">Minimal</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Color</label>
+<select id="color">
+<option value="#f472b6">Pink</option>
+<option value="#c4b5fd">Lavender</option>
+<option value="#86efac">Mint</option>
+<option value="#7dd3fc" selected>Sky</option>
+<option value="#fbbf24">Gold</option>
+<option value="#111827">Black</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Size</label>
+<select id="size">
+<option value="16">Small - 16cm</option>
+<option value="18" selected>Medium - 18cm</option>
+<option value="20">Large - 20cm</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Custom Text (max 12 chars)</label>
+<input type="text" id="charm" maxlength="12" placeholder="e.g. JAMILLE">
+</div>
+
+<div class="form-group">
+<label>Quantity</label>
+<input type="number" id="qty" value="1" min="1">
+</div>
+
+<div class="form-group">
+<label>Payment Method</label>
+<select id="payment">
+<option value="cod">Cash on Delivery </option>
+<option value="gcash">GCash (details sent after order)</option>
+</select>
+</div>
+
+<div class="form-group" style="display:flex; gap:8px;">
+<button class="primary" id="addCartBtn">Add to Cart</button>
+<button class="primary" id="buyBtn">Buy Now</button>
+</div>
+
+<div class="cart" id="cart">
+<h3>Cart</h3>
+<div id="cartItems">No items in cart wala ngani</div>
+</div>
+
+</div>
+
+<div class="modal" id="modal">
+<div class="modal-content">
+<h3>Checkout</h3>
+<div class="form-group">
+<label>Full Name</label>
+<input type="text" id="custName" placeholder="Your name">
+</div>
+<div class="form-group">
+<label>Phone</label>
+<input type="text" id="custPhone" placeholder="+63...">
+</div>
+<div class="form-group">
+<label>Address</label>
+<input type="text" id="custAddress" placeholder="Your address">
+</div>
+<div class="form-group">
+<label>Notes (optional)</label>
+<textarea id="custNote" rows="3" placeholder="Additional info"></textarea>
+</div>
+<div style="display:flex; justify-content:flex-end; gap:8px;">
+<button class="secondary" id="closeModal">Cancel</button>
+<button class="primary" id="placeOrder">Place Order</button>
+</div>
+</div>
+</div>
+
+<script>
+const preview = document.getElementById('preview');
+const charm = document.getElementById('charm');
+const color = document.getElementById('color');
+const styleSelect = document.getElementById('style');
+const sizeSelect = document.getElementById('size');
+const qty = document.getElementById('qty');
+const cartDiv = document.getElementById('cartItems');
+const addCartBtn = document.getElementById('addCartBtn');
+const buyBtn = document.getElementById('buyBtn');
+const modal = document.getElementById('modal');
+const closeModal = document.getElementById('closeModal');
+const placeOrderBtn = document.getElementById('placeOrder');
+const custName = document.getElementById('custName');
+const custPhone = document.getElementById('custPhone');
+const custAddress = document.getElementById('custAddress');
+const custNote = document.getElementById('custNote');
+const payment = document.getElementById('payment');
+const designsDiv = document.getElementById('designs');
+let selectedDesign = null;
+
+let cart = JSON.parse(localStorage.getItem('cb_cart')||'[]');
+
+// Load saved customer info
+custName.value = localStorage.getItem('custName')||'';
+custPhone.value = localStorage.getItem('custPhone')||'';
+custAddress.value = localStorage.getItem('custAddress')||'';
+
+// Functions
+function renderPreview(){
+    preview.innerHTML='';
+    if(selectedDesign){
+        const img = document.createElement('img');
+        img.src = selectedDesign.src;
+        img.style.width='80px';
+        img.style.height='80px';
+        img.style.marginBottom='8px';
+        preview.appendChild(img);
+    }
+    let text = charm.value.toUpperCase();
+    if(text.length>0){
+        for(let i=0;i<text.length;i++){
+            const bead = document.createElement('div');
+            bead.className='bead';
+            bead.style.background=color.value;
+            bead.textContent=text[i];
+            preview.appendChild(bead);
+        }
+    } else {
+        for(let i=0;i<8;i++){
+            const bead = document.createElement('div');
+            bead.className='bead';
+            bead.style.background=color.value;
+            preview.appendChild(bead);
+        }
+    }
+    const sizeLabel = document.createElement('div');
+    sizeLabel.style.width='100%';
+    sizeLabel.style.textAlign='center';
+    sizeLabel.style.marginTop='6px';
+    sizeLabel.style.fontSize='12px';
+    sizeLabel.style.color='#555';
+    sizeLabel.textContent='Size: '+sizeSelect.value+' cm';
+    preview.appendChild(sizeLabel);
+}
+charm.addEventListener('input', renderPreview);
+color.addEventListener('change', renderPreview);
+sizeSelect.addEventListener('change', renderPreview);
+renderPreview();
+
+// Design selection
+designsDiv.querySelectorAll('img').forEach(img=>{
+    img.addEventListener('click', ()=>{
+        designsDiv.querySelectorAll('img').forEach(i=>i.classList.remove('selected'));
+        img.classList.add('selected');
+        selectedDesign = img;
+        renderPreview();
+    });
+});
+
+// Cart
+function renderCart(){
+    if(cart.length===0){
+        cartDiv.innerHTML='No items in cart';
+        return;
+    }
+    cartDiv.innerHTML='';
+    cart.forEach((item,i)=>{
+        const div = document.createElement('div');
+        div.className='cart-item';
+        div.innerHTML=`<span>${item.style} ${item.charm?'-'+item.charm:''} ${item.design?'-'+item.design:''} x${item.qty}</span> <span>₱${item.price*item.qty}</span>`;
+        cartDiv.appendChild(div);
+    });
+}
+
+function addToCart(){
+    const item = {
+        style: styleSelect.value,
+        color: color.value,
+        size: sizeSelect.value,
+        charm: charm.value.toUpperCase(),
+        qty: Number(qty.value),
+        price: 200,
+        design: selectedDesign ? selectedDesign.dataset.name : ''
+    };
+    cart.push(item);
+    localStorage.setItem('cb_cart', JSON.stringify(cart));
+    renderCart();
+    alert('Added to cart!');
+}
+
+addCartBtn.addEventListener('click', addToCart);
+
+// Checkout modal
+function openModal(){
+    modal.style.display='flex';
+}
+function closeModalFunc(){
+    modal.style.display='none';
+}
+buyBtn.addEventListener('click', openModal);
+closeModal.addEventListener('click', closeModalFunc);
+
+placeOrderBtn.addEventListener('click', ()=>{
+    if(!custName.value || !custPhone.value || !custAddress.value){
+        alert('Please fill your contact info.');
+        return;
+    }
+    // Save customer info
+    localStorage.setItem('custName', custName.value);
+    localStorage.setItem('custPhone', custPhone.value);
+    localStorage.setItem('custAddress', custAddress.value);
+    // Generate order summary
+    let summary = `Order Summary:\n`;
+    cart.forEach((item,i)=>{
+        summary+=`${i+1}. ${item.style} ${item.charm?'-'+item.charm:''} ${item.design?'-'+item.design:''}, Size: ${item.size}cm, Qty: ${item.qty}, Total: ₱${item.price*item.qty}\n`;
+    });
+    summary+=`Payment: ${payment.value==='cod'?'Cash on Delivery':'GCash (details provided after order)'}\n`;
+    summary+=`Customer Info: ${custName.value}, ${custPhone.value}, ${custAddress.value}\n`;
+    if(custNote.value) summary+=`Notes: ${custNote.value}\n`;
+    console.log(summary);
+    alert('Order placed!\n\nCheck console for summary.');
+    // Reset
+    cart=[]; localStorage.removeItem('cb_cart'); renderCart();
+    charm.value=''; qty.value=1; selectedDesign=null;
+    designsDiv.querySelectorAll('img').forEach(i=>i.classList.remove('selected'));
+    renderPreview();
+    closeModalFunc();
+});
+</script>
+</body>
+</html>
